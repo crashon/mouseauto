@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MouseAuto Sidebar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>MouseAuto</h1>
+      <p class="subtitle">WEB AUTOMATION</p>
+    </header>
+
+    <div class="card pulse-border" id="record-section">
+      <div class="card-header">
+        <span class="icon">🔴</span>
+        <h2>녹화 및 등록</h2>
+      </div>
+      <div class="button-group">
+        <button id="record-btn" class="btn primary">녹화 시작</button>
+        <button id="register-btn" class="btn secondary">현재 탭 추가</button>
+      </div>
+      <div class="status-indicator">
+        <span class="dot" id="record-dot"></span>
+        <span id="record-status">대기 중</span>
+      </div>
+      <div id="target-tabs-area" class="tab-chips">
+        <!-- Tab chips will appear here -->
+      </div>
+    </div>
+
+    <div class="card" id="actions-section">
+      <div class="card-header">
+        <span class="icon">📋</span>
+        <h2>녹화된 동작</h2>
+      </div>
+      <ul id="actions-list" class="scroll-area">
+        <li class="empty-msg">녹화된 동작이 없습니다.</li>
+      </ul>
+    </div>
+
+    <div class="card" id="play-section">
+      <div class="card-header">
+        <span class="icon">▶️</span>
+        <h2>재생 제어</h2>
+      </div>
+      <div class="button-group">
+        <button id="play-btn" class="btn success">재생 시작</button>
+        <button id="auto-btn" class="btn info">자동 실행</button>
+      </div>
+      <div class="status-indicator">
+        <span class="dot" id="play-dot"></span>
+        <span id="play-status">대기 중</span>
+      </div>
+      
+      <div class="stats" id="stats-area" style="display: none;">
+        <div class="stat-item">
+          <span class="label">실행 횟수:</span>
+          <span id="exec-count" class="value">0회</span>
+        </div>
+        <div id="timer-display" class="stat-item">
+          <span class="label">남은 시간:</span>
+          <span id="remaining-time" class="value">--:--</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="settings-section">
+      <div class="card-header">
+        <span class="icon">⚙️</span>
+        <h2>설정</h2>
+      </div>
+      <div class="input-group">
+        <label for="interval">실행 간격 (분):</label>
+        <input type="number" id="interval" value="1" min="1" max="60">
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="action-buttons">
+        <button id="save-btn" class="btn-sm">저장</button>
+        <button id="load-btn" class="btn-sm">불러오기</button>
+      </div>
+      <p class="guide">F1: 녹화 / F2: 재생 / ESC: 중지</p>
+    </div>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

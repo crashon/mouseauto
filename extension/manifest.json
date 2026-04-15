@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "MouseAuto Extension",
+  "version": "1.0",
+  "description": "Chrome Extension for recording and replaying mouse actions like the MouseAuto Python app.",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open MouseAuto Sidebar"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"]
+    }
+  ]
+}

@@ -8,13 +8,20 @@ from pynput import mouse, keyboard
 from pynput.mouse import Button, Listener as MouseListener
 from pynput.keyboard import Key, Listener as KeyboardListener
 import os
+import ctypes
 
 class MouseAutoApp:
     def __init__(self, root):
         self.root = root
         self.root.title("마우스 자동 클릭 애플리케이션")
         self.root.geometry("600x550")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)
+        # 루트 그리드 확장 설정 (최대화 버튼 활성 및 컨텐츠 확장)
+        try:
+            self.root.columnconfigure(0, weight=1)
+            self.root.rowconfigure(0, weight=1)
+        except Exception:
+            pass
         
         # 상태 변수들
         self.is_recording = False
@@ -38,6 +45,13 @@ class MouseAutoApp:
         # 메인 프레임
         main_frame = ttk.Frame(self.root, padding="10")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        # 가로 확장 설정
+        try:
+            main_frame.columnconfigure(0, weight=1)
+            # 녹화된 동작 영역이 세로로도 확장되도록 설정
+            main_frame.rowconfigure(2, weight=1)
+        except Exception:
+            pass
         
         # 제목
         title_label = ttk.Label(main_frame, text="마우스 자동 클릭 애플리케이션", 
@@ -61,18 +75,30 @@ class MouseAutoApp:
         
         # 녹화된 동작 표시
         actions_frame = ttk.LabelFrame(main_frame, text="녹화된 동작", padding="10")
-        actions_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=(0, 10))
+        actions_frame.grid(row=2, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        try:
+            actions_frame.columnconfigure(0, weight=1)
+            actions_frame.rowconfigure(0, weight=1)
+        except Exception:
+            pass
         
         # 스크롤바가 있는 텍스트 위젯
         text_frame = ttk.Frame(actions_frame)
-        text_frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        text_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        try:
+            text_frame.columnconfigure(0, weight=1)
+            text_frame.rowconfigure(0, weight=1)
+        except Exception:
+            pass
         
         self.actions_text = tk.Text(text_frame, height=8, width=70, state=tk.DISABLED)
         scrollbar = ttk.Scrollbar(text_frame, orient=tk.VERTICAL, command=self.actions_text.yview)
         self.actions_text.configure(yscrollcommand=scrollbar.set)
         
-        self.actions_text.grid(row=0, column=0, sticky=(tk.W, tk.E))
+        self.actions_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        # 마우스 휠 스크롤 바인딩 (Windows)
+        self.actions_text.bind("<MouseWheel>", lambda e: self.actions_text.yview_scroll(int(-1*(e.delta/120)), "units"))
         
         # 재생 섹션
         play_frame = ttk.LabelFrame(main_frame, text="재생 제어", padding="10")
@@ -103,13 +129,38 @@ class MouseAutoApp:
         ttk.Label(settings_frame, text="실행 간격 (분):").grid(row=0, column=0, padx=(0, 5))
         
         self.interval_var = tk.StringVar(value="1")
-        interval_spinbox = ttk.Spinbox(settings_frame, from_=1, to=60, width=10, 
+        self.interval_spinbox = ttk.Spinbox(settings_frame, from_=1, to=60, width=10, 
                                       textvariable=self.interval_var,
                                       command=self.update_interval)
-        interval_spinbox.grid(row=0, column=1, padx=(0, 20))
+        self.interval_spinbox.grid(row=0, column=1, padx=(0, 20))
+        # 포커스 시 전체 선택하여 새 입력이 기존 값을 대체하도록 함
+        self.interval_spinbox.bind('<FocusIn>', lambda e: e.widget.selection_range(0, 'end'))
+        # Ctrl+A로 전체 선택 지원
+        self.interval_spinbox.bind('<Control-a>', lambda e: (e.widget.selection_range(0, 'end'), 'break'))
+        # 전체 선택 상태에서 첫 숫자 입력 시 값을 대체
+        def _interval_keypress(e):
+            if not e.char or not e.char.isdigit():
+                return
+            w = e.widget
+            try:
+                sel_first = int(w.index('sel.first'))
+                sel_last = int(w.index('sel.last'))
+                all_selected = (sel_first == 0 and sel_last == len(w.get()))
+            except Exception:
+                all_selected = False
+            if all_selected:
+                w.delete(0, 'end')
+                w.insert(0, e.char)
+                return 'break'
+        self.interval_spinbox.bind('<KeyPress>', _interval_keypress)
+        # 포커스 아웃 시 최종 값 보정
+        self.interval_spinbox.bind('<FocusOut>', lambda e: self.ensure_interval_valid())
         
-        # 값 변경 시에도 업데이트되도록 바인딩 추가
-        self.interval_var.trace('w', lambda *args: self.update_interval())
+        # 값 변경 시에도 업데이트되도록 바인딩 추가 (Tcl 9 대응)
+        try:
+            self.interval_var.trace_add('write', lambda *_: self.update_interval())
+        except Exception:
+            self.interval_var.trace('w', lambda *args: self.update_interval())
         
         # 파일 저장/로드
         file_frame = ttk.Frame(main_frame)
@@ -298,6 +349,7 @@ class MouseAutoApp:
                     mouse_controller.position = (action['x'], action['y'])
                     time.sleep(0.1)  # 안정성을 위한 짧은 대기
                     
+                    # 녹화된 스크롤 방향 그대로 재생
                     mouse_controller.scroll(action['dx'], action['dy'])
                 
                 previous_time = action['time']
@@ -409,11 +461,31 @@ class MouseAutoApp:
                 
     def update_interval(self):
         """실행 간격 업데이트"""
-        try:
-            self.interval_minutes = int(self.interval_var.get())
-        except ValueError:
+        value = self.interval_var.get().strip()
+        if not value.isdigit():
+            return  # 편집 중(빈 값/부분 숫자)에는 강제 보정하지 않음
+        num = int(value)
+        # 즉시 내부 값만 업데이트 (표시 값은 포커스 아웃 시 보정)
+        if 1 <= num <= 60:
+            self.interval_minutes = num
+        else:
+            # 범위를 넘는 경우에도 내부 값은 경계로 유지
+            self.interval_minutes = max(1, min(60, num))
+
+    def ensure_interval_valid(self):
+        """Spinbox 포커스 아웃 시 표시/내부 값을 1~60 범위로 보정"""
+        value = self.interval_var.get().strip()
+        if not value.isdigit():
             self.interval_minutes = 1
             self.interval_var.set("1")
+            return
+        num = int(value)
+        if num < 1:
+            num = 1
+        elif num > 60:
+            num = 60
+        self.interval_minutes = num
+        self.interval_var.set(str(num))
             
     def stop_all(self):
         """모든 작업 중지"""
@@ -479,6 +551,18 @@ class MouseAutoApp:
         self.root.destroy()
 
 def main():
+    # Windows DPI 스케일링으로 인한 좌표 오프셋 방지
+    if os.name == 'nt':
+        try:
+            # Per-Monitor DPI Aware (if available)
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            try:
+                # System DPI Aware fallback
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception:
+                pass
+
     root = tk.Tk()
     app = MouseAutoApp(root)
     
