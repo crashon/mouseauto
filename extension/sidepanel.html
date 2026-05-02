@@ -83,9 +83,14 @@
 
     <div class="footer">
       <div class="action-buttons">
-        <button id="save-btn" class="btn-sm">저장</button>
-        <button id="load-btn" class="btn-sm">불러오기</button>
+        <button id="save-btn" class="btn-sm" title="브라우저에 저장">내부 저장</button>
+        <button id="load-btn" class="btn-sm" title="브라우저에서 불러오기">내부 로드</button>
       </div>
+      <div class="action-buttons">
+        <button id="export-btn" class="btn-sm primary-outline">파일 내보내기</button>
+        <button id="import-btn" class="btn-sm primary-outline">파일 가져오기</button>
+      </div>
+      <input type="file" id="file-input" accept=".json" style="display: none;">
       <p class="guide">F1: 녹화 / F2: 재생 / ESC: 중지</p>
     </div>
   </div>

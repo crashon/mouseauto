@@ -234,6 +234,16 @@ input[type="number"] {
 
 .chip .close:hover { opacity: 1; }
 
+.btn-sm.primary-outline {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.btn-sm.primary-outline:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
 .action-buttons {
   display: flex;
   gap: 8px;

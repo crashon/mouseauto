@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "FreeBit Multiply Monitor",
+  "version": "1.0",
+  "description": "Automates and monitors Multiply BTC rolls on FreeBitco.in",
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://freebitco.in/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open FreeBit Monitor"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://freebitco.in/*"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
